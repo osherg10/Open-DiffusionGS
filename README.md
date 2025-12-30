@@ -73,21 +73,54 @@ This is an implementation of our work "Baking Gaussian Splatting into Diffusion 
 
 `Note:` The first row is the prompt image. The second row is Hunyuan-v2.5. The third row is our open-source model. Our model only takes 24s for inference, while Hunyuan-v2.5 takes about 180s. Our model is **7.5x** faster. As for the training cost, our open-source model only takes 16-32 GPUs to train and can be applied on scene-level generation, while Hunyuan-v2.5 is much more expensive.
 
-<p align="center">
-  <img src="img/1.png" width="32%" alt="1">
-  <img src="img/2.jpg" width="32%" alt="2">
-  <img src="img/3.png" width="32%" alt="3">
-</p>
-<p align="center">
-  <img src="img/hunyuan_1.gif" width="32%" alt="hunyuan_1">
-  <img src="img/hunyuan_2.gif" width="32%" alt="hunyuan_2">
-  <img src="img/hunyuan_3.gif" width="32%" alt="hunyuan_3">
-</p>
-<p align="center">
-  <img src="img/ours_1.gif" width="32%" alt="ours_1">
-  <img src="img/ours_2.gif" width="32%" alt="ours_2">
-  <img src="img/ours_3.gif" width="32%" alt="ours_3">
-</p>
+<!-- ===== Row 1: Prompt Image ===== -->
+<table align="center" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <img src="img/1.png" width="32%" alt="1">
+      <img src="img/2.jpg" width="32%" alt="2">
+      <img src="img/3.png" width="32%" alt="3">
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:6px;font-style:italic;">
+      Prompt Image at Any Viewpoints
+    </td>
+  </tr>
+</table>
+
+<!-- ===== Row 2: Hunyuan3D ===== -->
+<table align="center" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <img src="img/hunyuan_1.gif" width="32%" alt="hunyuan_1">
+      <img src="img/hunyuan_2.gif" width="32%" alt="hunyuan_2">
+      <img src="img/hunyuan_3.gif" width="32%" alt="hunyuan_3">
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:6px;font-style:italic;">
+      Tencent Hunyuan3D-v2.5 (Inference Time: 180 seconds)
+    </td>
+  </tr>
+</table>
+
+<!-- ===== Row 3: DiffusionGS ===== -->
+<table align="center" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
+  <tr>
+    <td align="center">
+      <img src="img/ours_1.gif" width="32%" alt="ours_1">
+      <img src="img/ours_2.gif" width="32%" alt="ours_2">
+      <img src="img/ours_3.gif" width="32%" alt="ours_3">
+    </td>
+  </tr>
+  <tr>
+    <td align="center" style="padding-top:6px;font-style:italic;">
+      Our DiffusionGS (Inference Time: 24 seconds)
+    </td>
+  </tr>
+</table>
+
 
 </details>
 
@@ -152,7 +185,7 @@ json
 └── val.json  ## set a subset for eval
 ```
 
-Then, specified the `local_dir` to this json file and the `image_dir` to the `gobjaverse` file in the config file (`diffusionGS/configs/diffusionGS_rel.yaml`) so that you can train our model using gobjaverse.
+Then, specify the `local_dir` to this json file and the `image_dir` to the `gobjaverse` file in the config file (`diffusionGS/configs/diffusionGS_rel.yaml`) so that you can train our model using gobjaverse.
 
 
 &nbsp;
