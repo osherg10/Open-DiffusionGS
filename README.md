@@ -83,12 +83,11 @@ This is an implementation of our work "Baking Gaussian Splatting into Diffusion 
     </td>
   </tr>
   <tr>
-    <td align="center" style="padding-top:6px;font-style:italic;">
+    <td align="center" style="padding-top:0px;font-style:italic;">
       Prompt Image at Any Viewpoints
     </td>
   </tr>
 </table>
-
 <!-- ===== Row 2: Hunyuan3D ===== -->
 <table align="center" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
   <tr>
@@ -99,12 +98,11 @@ This is an implementation of our work "Baking Gaussian Splatting into Diffusion 
     </td>
   </tr>
   <tr>
-    <td align="center" style="padding-top:6px;font-style:italic;">
+    <td align="center" style="padding-top:0px;font-style:italic;">
       Tencent Hunyuan3D-v2.5 (Inference Time: 180 seconds)
     </td>
   </tr>
 </table>
-
 <!-- ===== Row 3: DiffusionGS ===== -->
 <table align="center" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">
   <tr>
@@ -115,7 +113,7 @@ This is an implementation of our work "Baking Gaussian Splatting into Diffusion 
     </td>
   </tr>
   <tr>
-    <td align="center" style="padding-top:6px;font-style:italic;">
+    <td align="center" style="padding-top:0px;font-style:italic;">
       Our DiffusionGS (Inference Time: 24 seconds)
     </td>
   </tr>
