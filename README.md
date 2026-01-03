@@ -150,7 +150,18 @@ This code will automatically download the model checkpoints and config files fro
 
 &nbsp;
 
-## 3. Data Preparation
+## 3. Colab-first workflow (no code editing required)
+If you prefer to run everything from a single Jupyter notebook in Google Colab, upload or open [`notebooks/main.ipynb`](notebooks/main.ipynb) in Colab and follow the cells in order:
+- Mount Google Drive and optionally clone this repository into `/content`.
+- Install dependencies with the provided cell (or set `SKIP_PIP_INSTALL=1` to reuse a prebuilt runtime).
+- Preprocess RealEstate10K, point the Objaverse JSON/image roots, and toggle between the continuous or discrete+octree scheduler configs.
+- Launch training, render outputs, and compute FID/KID directly from the notebook, saving everything back to Drive.
+
+You do not need to edit any source files to train, evaluate, or score the models when using this notebook-driven path.
+
+&nbsp;
+
+## 4. Data Preparation
 
 ### 3.1 Scene-level Dataset
 
@@ -203,6 +214,21 @@ json
 
 Then, specify the `local_dir` to this json file and the `image_dir` to the `gobjaverse` file in the config file (`diffusionGS/configs/diffusionGS_rel.yaml`) so that you can train our model using gobjaverse.
 
+### 3.3 ShapeNet category subsets
+
+If you want to fine-tune or train on specific ShapeNet categories, you can reuse the object datamodule with category-aware filtering:
+
+- Prepare `train/val/test.json` lists that reference your pre-rendered ShapeNet assets (matching the same folder layout used for G-Objaverse renders: each object folder should contain `campos_512_v4/00000.png` + `00000.json` style files).
+- Create a category mapping JSON that maps each `uid` in the split lists to a category string (see `examp_data/shapenet_category_map.example.json` for a small template).
+- Point `data.category_mapping_json` to that mapping file and set `data.category_filter` to the ShapeNet categories or synsets you want (for example `['chair', 'airplane']`).
+- Use the ready-made config [`diffusionGS/configs/diffusionGS_shapenet.yaml`](diffusionGS/configs/diffusionGS_shapenet.yaml) or load it directly inside the Colab notebook by setting `USE_SHAPENET_CONFIG=True` and `SHAPENET_CATEGORY_FILTER="chair,airplane"`.
+
+You can launch training with the ShapeNet config using the standard entrypoint:
+
+```bash
+python launch.py --config diffusionGS/configs/diffusionGS_shapenet.yaml
+```
+
 
 &nbsp;
 
@@ -245,6 +271,8 @@ after you replace the `exp_root_dir` in `cal_metrics.sh`, you can run this scrip
 
 
 ## 5. Training
+If you want to train the discrete diffusion variant (including optional octree tokens) end-to-end, follow the detailed checklist in [docs/DISCRETE_TRAINING.md](docs/DISCRETE_TRAINING.md).
+
 We provide 4 stages training scripts for you to train your own models:
 ```bash
 bash scripts/train_scene_stage1.py # train object model (res256)
