@@ -160,6 +160,24 @@ Run the following command to preprocess the data into our format.
 python process_data.py --base_path YOUR_RAW_DATAPATH --output_dir YOUR_PROCESSED_DATAPATH --mode ['train' or 'test']
 ```
 
+If you are preparing the dataset inside Google Colab, you can mount Drive, set the input/output paths, and generate the train/test file lists directly in the notebook:
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+
+# Point to your downloaded RealEstate10K zips and the desired processed location on Drive
+RAW_DATA_DIR = '/content/drive/MyDrive/re10k_raw'
+PROCESSED_DIR = '/content/drive/MyDrive/re10k_processed'
+
+# Create the train/test JSON lists used by the trainer
+!python process_data.py --base_path $RAW_DATA_DIR --output_dir $PROCESSED_DIR --mode train
+!python process_data.py --base_path $RAW_DATA_DIR --output_dir $PROCESSED_DIR --mode test
+
+print('Train list:', f"{PROCESSED_DIR}/train/full_list.txt")
+print('Eval list:', f"{PROCESSED_DIR}/test/full_list.txt")
+```
+The generated `full_list.txt` files (train/test) can then be referenced in your config as `local_dir`/`local_eval_dir` when running scene training or evaluation in Colab.
+
 ### 3.2 Object-level Dataset
 
 We retrained our model using only the Objaverse dataset, which differs from the approaches adopted by Adobe. Additionally, we provide a dataloader that allows you to leverage the open-source G-Objaverse to train object models from scratch.

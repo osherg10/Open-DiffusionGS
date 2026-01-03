@@ -22,6 +22,8 @@ class BaseDataModuleConfig:
     local_dir: str = ''
     local_eval_dir: str = ''
     view_idx_file_path: str = 'extra_files/evaluation_index_re10k.json'
+    auto_download: bool = False
+    colab_mount_path: str = '/content'
     batch_size: int = 32
     eval_batch_size: int = 1
     eval_subset: int = -1
