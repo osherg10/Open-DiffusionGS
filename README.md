@@ -214,6 +214,21 @@ json
 
 Then, specify the `local_dir` to this json file and the `image_dir` to the `gobjaverse` file in the config file (`diffusionGS/configs/diffusionGS_rel.yaml`) so that you can train our model using gobjaverse.
 
+### 3.3 ShapeNet category subsets
+
+If you want to fine-tune or train on specific ShapeNet categories, you can reuse the object datamodule with category-aware filtering:
+
+- Prepare `train/val/test.json` lists that reference your pre-rendered ShapeNet assets (matching the same folder layout used for G-Objaverse renders: each object folder should contain `campos_512_v4/00000.png` + `00000.json` style files).
+- Create a category mapping JSON that maps each `uid` in the split lists to a category string (see `examp_data/shapenet_category_map.example.json` for a small template).
+- Point `data.category_mapping_json` to that mapping file and set `data.category_filter` to the ShapeNet categories or synsets you want (for example `['chair', 'airplane']`).
+- Use the ready-made config [`diffusionGS/configs/diffusionGS_shapenet.yaml`](diffusionGS/configs/diffusionGS_shapenet.yaml) or load it directly inside the Colab notebook by setting `USE_SHAPENET_CONFIG=True` and `SHAPENET_CATEGORY_FILTER="chair,airplane"`.
+
+You can launch training with the ShapeNet config using the standard entrypoint:
+
+```bash
+python launch.py --config diffusionGS/configs/diffusionGS_shapenet.yaml
+```
+
 
 &nbsp;
 

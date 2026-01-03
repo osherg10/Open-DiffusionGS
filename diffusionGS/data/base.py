@@ -78,6 +78,10 @@ class BaseDataModuleConfig:
     # Optional discrete tokenization for octree-based schedulers
     discrete_tokenize: bool = False
     discrete_octree_depth: int = 3
+    # Optional category filtering (e.g., ShapeNet synsets)
+    category_mapping_json: Optional[str] = None
+    category_filter: Optional[List[str]] = None
+    category_key: str = "category"
 
 
 def get_remaining_indices(gen_idx: Optional[List[int]], all_idx: List[int]) -> List[int]:
@@ -109,6 +113,60 @@ class BaseDataset(Dataset):
         self.cfg: BaseDataModuleConfig = cfg
         self.split = split
         self.uids = json.load(open(f'{cfg.local_dir}/{split}.json'))
+        self.category_mapping = {}
+        self.category_filter = set(cfg.category_filter or [])
+
+        if cfg.category_mapping_json:
+            try:
+                with open(cfg.category_mapping_json, "r", encoding="utf-8") as f:
+                    mapping_raw = json.load(f)
+            except FileNotFoundError:
+                print(
+                    f"Category mapping file not found: {cfg.category_mapping_json}. "
+                    "Proceeding without category filtering."
+                )
+                mapping_raw = None
+
+            if mapping_raw:
+                if isinstance(mapping_raw, dict):
+                    for uid, cat in mapping_raw.items():
+                        if isinstance(cat, dict):
+                            cat_value = cat.get(cfg.category_key)
+                        else:
+                            cat_value = cat
+                        self.category_mapping[str(uid)] = cat_value
+                elif isinstance(mapping_raw, list):
+                    for entry in mapping_raw:
+                        if not isinstance(entry, dict):
+                            continue
+                        uid = entry.get("uid") or entry.get("id") or entry.get("name")
+                        if uid is None:
+                            continue
+                        cat_value = entry.get(cfg.category_key) or entry.get("category")
+                        if cat_value is not None:
+                            self.category_mapping[str(uid)] = cat_value
+                else:
+                    print(
+                        "Category mapping JSON must be a dict or list; skipping category filtering."
+                    )
+
+        if self.category_filter:
+            if not self.category_mapping:
+                print(
+                    "category_filter was provided but no mapping was found; "
+                    "skipping category-based filtering."
+                )
+            else:
+                before = len(self.uids)
+                self.uids = [
+                    uid
+                    for uid in self.uids
+                    if self.category_mapping.get(str(uid)) in self.category_filter
+                ]
+                after = len(self.uids)
+                print(
+                    f"Filtered uids by categories {sorted(self.category_filter)}: {before} -> {after}"
+                )
         self.train_idxs = get_remaining_indices(self.cfg.gen_idxs,self.cfg.all_idxs)
         # Default camera intrinsics [for Gobjaverse]
         self.fxfycxcy = torch.tensor([self.cfg.default_fxfy, self.cfg.default_fxfy, 0.5, 0.5], dtype=torch.float32)
