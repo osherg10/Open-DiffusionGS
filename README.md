@@ -150,7 +150,18 @@ This code will automatically download the model checkpoints and config files fro
 
 &nbsp;
 
-## 3. Data Preparation
+## 3. Colab-first workflow (no code editing required)
+If you prefer to run everything from a single Jupyter notebook in Google Colab, upload or open [`notebooks/main.ipynb`](notebooks/main.ipynb) in Colab and follow the cells in order:
+- Mount Google Drive and optionally clone this repository into `/content`.
+- Install dependencies with the provided cell (or set `SKIP_PIP_INSTALL=1` to reuse a prebuilt runtime).
+- Preprocess RealEstate10K, point the Objaverse JSON/image roots, and toggle between the continuous or discrete+octree scheduler configs.
+- Launch training, render outputs, and compute FID/KID directly from the notebook, saving everything back to Drive.
+
+You do not need to edit any source files to train, evaluate, or score the models when using this notebook-driven path.
+
+&nbsp;
+
+## 4. Data Preparation
 
 ### 3.1 Scene-level Dataset
 
