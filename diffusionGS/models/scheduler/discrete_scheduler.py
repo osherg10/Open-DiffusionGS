@@ -8,11 +8,7 @@ from diffusers.configuration_utils import ConfigMixin, register_to_config
 from diffusers.schedulers.scheduling_utils import SchedulerMixin
 from diffusers.utils import BaseOutput
 
-from diffusionGS.models.scheduler.ddim_scheduler import (
-    DDIMSchedulerOutput,
-    betas_for_alpha_bar,
-    rescale_zero_terminal_snr,
-)
+from diffusionGS.models.scheduler.ddim_scheduler import betas_for_alpha_bar, rescale_zero_terminal_snr
 
 
 @dataclass
@@ -87,10 +83,12 @@ class DiscreteScheduler(SchedulerMixin, ConfigMixin):
         self.timesteps = timesteps.to(device) if device is not None else timesteps
         self.num_inference_steps = num_inference_steps
 
-    def _get_variance(self, timestep: torch.Tensor) -> torch.Tensor:
+    def _get_variance(self, timestep: torch.Tensor, device: torch.device) -> torch.Tensor:
         prev_timestep = timestep - 1
-        alpha_prod_t = self.alphas_cumprod[timestep]
-        alpha_prod_t_prev = torch.where(prev_timestep >= 0, self.alphas_cumprod[prev_timestep], self.final_alpha_cumprod)
+        alphas_cumprod = self.alphas_cumprod.to(device)
+        alpha_prod_t = alphas_cumprod[timestep]
+        final_alpha_cumprod = self.final_alpha_cumprod.to(device)
+        alpha_prod_t_prev = torch.where(prev_timestep >= 0, alphas_cumprod[prev_timestep], final_alpha_cumprod)
         variance = (1 - alpha_prod_t_prev) / (1 - alpha_prod_t) * (1 - alpha_prod_t / alpha_prod_t_prev)
         return variance
 
@@ -101,7 +99,7 @@ class DiscreteScheduler(SchedulerMixin, ConfigMixin):
         sample: torch.Tensor,
         generator: Optional[torch.Generator] = None,
         return_dict: bool = True,
-    ) -> Union[DDIMSchedulerOutput, tuple]:
+    ) -> Union[DiscreteSchedulerOutput, tuple]:
         """
         Progress the sample from ``t`` to ``t-1`` using discrete transitions.
 
@@ -111,11 +109,15 @@ class DiscreteScheduler(SchedulerMixin, ConfigMixin):
         the diffusion noise level.
         """
 
-        if isinstance(timestep, int):
-            timestep = torch.tensor(timestep, device=sample.device)
+        device = sample.device
 
-        alpha_prod_t = self.alphas_cumprod[timestep]
-        alpha_prod_t_prev = self.alphas_cumprod[timestep - 1] if timestep > 0 else self.final_alpha_cumprod
+        if isinstance(timestep, int):
+            timestep = torch.tensor(timestep, device=device)
+
+        alphas_cumprod = self.alphas_cumprod.to(device)
+        final_alpha_cumprod = self.final_alpha_cumprod.to(device)
+        alpha_prod_t = alphas_cumprod[timestep]
+        alpha_prod_t_prev = alphas_cumprod[timestep - 1] if timestep > 0 else final_alpha_cumprod
 
         if self.config.prediction_type == "epsilon":
             pred_original_sample = (sample - torch.sqrt(1 - alpha_prod_t) * model_output) / torch.sqrt(alpha_prod_t)
@@ -131,7 +133,7 @@ class DiscreteScheduler(SchedulerMixin, ConfigMixin):
         noisy_prob = torch.softmax(sample, dim=-1)
 
         # variance controls how much noise remains; convert to a mixing weight
-        variance = self._get_variance(timestep)
+        variance = self._get_variance(timestep, device)
         blend = torch.clamp(torch.sqrt(alpha_prod_t_prev / alpha_prod_t), 0.0, 1.0)
         blend = blend * (1.0 - variance).to(sample.device)
         blend = blend * self.config.transition_power
@@ -145,4 +147,4 @@ class DiscreteScheduler(SchedulerMixin, ConfigMixin):
         if not return_dict:
             return prev_sample, pred_original_sample
 
-        return DDIMSchedulerOutput(prev_sample=prev_sample, pred_original_sample=pred_original_sample)
+        return DiscreteSchedulerOutput(prev_sample=prev_sample, pred_original_sample=pred_original_sample)
