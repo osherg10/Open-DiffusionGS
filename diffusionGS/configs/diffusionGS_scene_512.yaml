@@ -42,7 +42,7 @@ system:
     use_flash: true
     use_checkpoint: true
 
-  noise_scheduler_type: "diffusionGS.models.scheduler.ddim_scheduler.DDIMScheduler"
+  noise_scheduler_type: "diffusionGS.models.scheduler.discrete_scheduler.DiscreteScheduler"
   noise_scheduler:
     num_train_timesteps: 1000
     prediction_type: "sample"
