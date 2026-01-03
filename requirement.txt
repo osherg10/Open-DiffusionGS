@@ -16,6 +16,7 @@ plyfile==1.0.3
 PyMCubes==0.1.4
 pyparsing==3.1.2
 pytorch-lightning==2.2.4
+torchmetrics==1.4.0.post0
 PyYAML==6.0.1
 safetensors==0.4.3
 scikit-image==0.23.2
