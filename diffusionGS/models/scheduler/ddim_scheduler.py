@@ -232,6 +232,15 @@ class DDIMScheduler(SchedulerMixin, ConfigMixin):
         # setable values
         self.num_inference_steps = None
         self.timesteps = torch.from_numpy(np.arange(0, num_train_timesteps)[::-1].copy().astype(np.int64))
+        self._conditioning_tokens = None
+
+    def set_conditioning_tokens(self, tokens: Optional[torch.Tensor]):
+        """Store discrete tokens for downstream schedulers or models.
+
+        The default DDIM scheduler does not alter its trajectory, but keeping
+        the tokens enables models that query the scheduler to retrieve them.
+        """
+        self._conditioning_tokens = tokens
 
     def scale_model_input(self, sample: torch.Tensor, timestep: Optional[int] = None) -> torch.Tensor:
         """

@@ -84,6 +84,7 @@ class FlowMatchEulerDiscreteScheduler(SchedulerMixin, ConfigMixin):
 
         self._step_index = None
         self._begin_index = None
+        self._conditioning_tokens = None
 
         self.sigmas = sigmas.to("cpu")  # to avoid too much CPU/GPU communication
         self.sigma_min = self.sigmas[-1].item()
@@ -168,6 +169,21 @@ class FlowMatchEulerDiscreteScheduler(SchedulerMixin, ConfigMixin):
     def time_shift(self, mu: float, sigma: float, t: torch.Tensor):
         return math.exp(mu) / (math.exp(mu) + (1 / t - 1) ** sigma)
 
+    def set_conditioning_tokens(self, tokens: Optional[torch.Tensor]):
+        """Register discrete tokens so timestep shifting can react to sequence length."""
+        self._conditioning_tokens = tokens
+
+    def _compute_dynamic_mu(self):
+        if self._conditioning_tokens is None:
+            return None
+        seq_len = self._conditioning_tokens.numel()
+        if seq_len <= 0:
+            return None
+        # Scale the shift gently with token count, bounded by provided limits.
+        base_len = max(float(self.config.base_image_seq_len), 1.0)
+        ratio = min(float(seq_len), float(self.config.max_image_seq_len)) / base_len
+        return min(self.config.max_shift, max(self.config.base_shift, math.log1p(ratio)))
+
     def set_timesteps(
         self,
         num_inference_steps: int = None,
@@ -186,7 +202,9 @@ class FlowMatchEulerDiscreteScheduler(SchedulerMixin, ConfigMixin):
         """
 
         if self.config.use_dynamic_shifting and mu is None:
-            raise ValueError(" you have a pass a value for `mu` when `use_dynamic_shifting` is set to be `True`")
+            mu = self._compute_dynamic_mu()
+            if mu is None:
+                raise ValueError(" you have a pass a value for `mu` when `use_dynamic_shifting` is set to be `True`")
 
         if sigmas is None:
             self.num_inference_steps = num_inference_steps

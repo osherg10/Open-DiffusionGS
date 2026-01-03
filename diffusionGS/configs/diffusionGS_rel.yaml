@@ -16,6 +16,8 @@ data:
   norm_camera: True
   norm_radius: 3. #1.8
   gen_rel_idxs: True
+  discrete_tokenize: false
+  discrete_octree_depth: 3
   
 
 system_type: "diffusion-gs-system"

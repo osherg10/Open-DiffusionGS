@@ -70,6 +70,8 @@ class PointDiffusionSystem(BaseSystem):
 
     def forward(self, batch: Dict[str, Any], skip_noise=False) -> Dict[str, Any]:
         #get training input
+        if hasattr(self.noise_scheduler, "set_conditioning_tokens") and "octree_tokens_input" in batch:
+            self.noise_scheduler.set_conditioning_tokens(batch["octree_tokens_input"])
         sel_images = batch['rgbs_input'] #(batch['rgbs_input']*2.) - 1. ##归一化
         ray_o, ray_d = TransformInput(sel_images, batch['c2ws_input'], batch['fxfycxcys_input'])
         bs, v, c, h, w = sel_images.shape
@@ -131,8 +133,10 @@ class PointDiffusionSystem(BaseSystem):
     @torch.no_grad()
     def validation_step(self, batch, batch_idx):
         self.eval()
+        if hasattr(self.noise_scheduler, "set_conditioning_tokens") and "octree_tokens_input" in batch:
+            self.noise_scheduler.set_conditioning_tokens(batch["octree_tokens_input"])
         # TODO: write a save and denoise process
-        # out = self(batch)      
+        # out = self(batch)
             # if get_rank() == 0:
             ######################## for debug ########################
         # input_batch_test = self.get_example_data()

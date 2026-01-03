@@ -75,6 +75,9 @@ class BaseDataModuleConfig:
     background_color: Tuple[float, float, float] = field(
             default_factory=lambda: (1., 1., 1.)
         )
+    # Optional discrete tokenization for octree-based schedulers
+    discrete_tokenize: bool = False
+    discrete_octree_depth: int = 3
 
 
 def get_remaining_indices(gen_idx: Optional[List[int]], all_idx: List[int]) -> List[int]:
@@ -240,6 +243,23 @@ class BaseDataset(Dataset):
         ret['rgbs_input'] = ret['rgbs'][:self.cfg.gen_views]
         ret['c2ws_input'] = ret['c2ws'][:self.cfg.gen_views]
         ret['fxfycxcys_input'] = ret['fxfycxcys'][:self.cfg.gen_views]
+
+        if self.cfg.discrete_tokenize:
+            # Quantize camera origins into an octree grid so discrete schedulers can consume spatial priors.
+            cam_positions = ret['c2ws'][:, :3, 3]
+            bbox_min = cam_positions.min(dim=0).values - 1e-3
+            bbox_max = cam_positions.max(dim=0).values + 1e-3
+            num_cells = int(np.exp2(self.cfg.discrete_octree_depth))
+            grid_extent = (bbox_max - bbox_min).clamp(min=1e-6)
+            normalized = (cam_positions - bbox_min) / grid_extent
+            indices = (normalized * num_cells).clamp(0, num_cells - 1e-4).long()
+            flat_tokens = (
+                indices[:, 0] * (num_cells ** 2)
+                + indices[:, 1] * num_cells
+                + indices[:, 2]
+            ).to(torch.int64)
+            ret['octree_tokens'] = flat_tokens
+            ret['octree_tokens_input'] = flat_tokens[: self.cfg.gen_views]
         return ret
         
     def __getitem__(self, index):
