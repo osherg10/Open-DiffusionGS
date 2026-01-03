@@ -245,6 +245,8 @@ after you replace the `exp_root_dir` in `cal_metrics.sh`, you can run this scrip
 
 
 ## 5. Training
+If you want to train the discrete diffusion variant (including optional octree tokens) end-to-end, follow the detailed checklist in [docs/DISCRETE_TRAINING.md](docs/DISCRETE_TRAINING.md).
+
 We provide 4 stages training scripts for you to train your own models:
 ```bash
 bash scripts/train_scene_stage1.py # train object model (res256)
